@@ -1,0 +1,11 @@
+framework:
+    secret: '%env(APP_SECRET)%'
+    csrf_protection: false
+    http_method_override: true
+    form: ~
+
+    php_errors:
+        log: true
+
+    serializer:
+        enable_annotations: true

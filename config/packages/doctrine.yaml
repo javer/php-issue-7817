@@ -1,0 +1,62 @@
+parameters:
+    doctrine.orm.metadata.cache.file: '%kernel.cache_dir%/doctrine/orm/metadata.php'
+
+doctrine:
+    dbal:
+        server_version: '8.0'
+        charset: utf8mb4
+        default_table_options:
+            charset: utf8mb4
+            collation: utf8mb4_unicode_ci
+        url: '%env(resolve:DATABASE_URL)%'
+    orm:
+        auto_generate_proxy_classes: true
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        auto_mapping: true
+        mappings:
+            App:
+                is_bundle: false
+                type: attribute
+                dir: '%kernel.project_dir%/src/App/Entity'
+                prefix: 'App\Entity'
+                alias: App
+        metadata_cache_driver:
+            type: service
+            id: doctrine.orm.metadata.cache.adapter
+        query_cache_driver:
+            type: pool
+            pool: doctrine.orm.query_cache_pool
+        result_cache_driver:
+            type: pool
+            pool: doctrine.orm.result_cache_pool
+
+framework:
+    cache:
+        pools:
+            doctrine.orm.metadata_cache_pool:
+                default_lifetime: 31536000
+                adapters:
+                    - cache.adapter.array
+                    - cache.system
+            doctrine.orm.query_cache_pool:
+                default_lifetime: 31536000
+                adapters:
+                    - cache.adapter.array
+                    - cache.system
+            doctrine.orm.result_cache_pool:
+                adapter: cache.adapter.array
+
+services:
+    doctrine.orm.metadata.cache.adapter:
+        class: Symfony\Component\Cache\Adapter\PhpArrayAdapter
+        arguments:
+            - '%doctrine.orm.metadata.cache.file%'
+            - '@doctrine.orm.metadata_cache_pool'
+
+    doctrine.orm.metadata.cache.warmer:
+        class: Doctrine\Bundle\DoctrineBundle\CacheWarmer\DoctrineMetadataCacheWarmer
+        arguments:
+            - '@doctrine.orm.default_entity_manager'
+            - '%doctrine.orm.metadata.cache.file%'
+        tags:
+            - { name: kernel.cache_warmer, priority: 1000 }

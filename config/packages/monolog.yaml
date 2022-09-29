@@ -1,0 +1,14 @@
+monolog:
+    handlers:
+        main:
+            type: stream
+            path: '%env(resolve:LOG_FILE_PATH)%'
+            level: debug
+            channels: ["!event"]
+        console:
+            type: console
+            process_psr_3_messages: false
+            level: debug
+            channels: ["!event", "!doctrine", "!console"]
+            console_formatter_options:
+                date_format: "[Y-m-d H:i:s]"
